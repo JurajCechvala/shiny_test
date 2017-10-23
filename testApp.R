@@ -1,40 +1,44 @@
 library(shiny)
+library(tidyverse)
 
+# DATA PREPARATION --------------------------------------------------------------------------------
+load("yield_curve_2015-05-31.RData")
+
+yield.curve$fun <- approxfun(x = yield.curve$curve.data$term_Y,
+                             y = yield.curve$curve.data$yield_bsp,
+                             rule = 2)
+
+# SHINY APP ---------------------------------------------------------------------------------------
 # Define UI for application that draws a histogram
-shinyUI(fluidPage(
+ui <-
+  fluidPage(
 
   # Application title
-  titlePanel("Old Faithful Geyser Data"),
+  titlePanel("Yield Curve"),
 
-  # Sidebar with a slider input for number of bins
+  # Sidebar with a slider input for min and max shown values
   sidebarLayout(
     sidebarPanel(
-      sliderInput("bins",
-                  "Number of bins:",
-                  min = 1,
-                  max = 50,
-                  value = 30)
-    ),
-
-    # Show a plot of the generated distribution
+      sliderInput("window",
+                  "Minimum and maximum term [years]",
+                  min = 0,
+                  max = 2*max(yield.curve$curve.data$term_Y, na.rm = TRUE),
+                  value = c(min(yield.curve$curve.data$term_Y, na.rm = TRUE),
+                            max(yield.curve$curve.data$term_Y, na.rm = TRUE)),
+                  step = 1)),
+    # Show a plot of the data
     mainPanel(
-      plotOutput("distPlot")
-    )
-  )
-))
+      plotOutput("ycPlot"))))
 
 # Define server logic required to draw a histogram
-shinyServer(function(input, output) {
+server <- function(input, output) {
 
-  output$distPlot <- renderPlot({
+  output$ycPlot <-
+    renderPlot({
 
-    # generate bins based on input$bins from ui.R
-    x    <- faithful[, 2]
-    bins <- seq(min(x), max(x), length.out = input$bins + 1)
+      # draw the YC approximation function
+      plot.function(yield.curve$fun, from = input$window[1], to = input$window[2])
+    })
+}
 
-    # draw the histogram with the specified number of bins
-    hist(x, breaks = bins, col = 'darkgray', border = 'white')
-
-  })
-
-})
+shinyApp(ui, server)
