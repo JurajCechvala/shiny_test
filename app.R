@@ -9,8 +9,8 @@ yield.curve$fun <- approxfun(x = yield.curve$curve.data$term_Y,
                              y = yield.curve$curve.data$yield_bps,
                              rule = 2)
 
+# stress scenarios as a list of functions to be superimposed on real YC
 stress.fun <- list()
-
 stress.fun$no.stress  <- function(x) {rep(   0, length(x))}
 stress.fun$p200bps    <- function(x) {rep( 200, length(x))}
 stress.fun$m200bps    <- function(x) {rep(-200, length(x))}
@@ -51,6 +51,7 @@ ui <-
 # Define server
 server <- function(input, output) {
 
+  # superposition of real YC and stress scenario
   function.to.plot <-
     reactive({
       function(x){
@@ -60,7 +61,7 @@ server <- function(input, output) {
 
   output$ycPlot <-
     renderPlot({
-      # draw the YC approximation function using ggplot
+      # draw the YC function using ggplot
       ggplot(data.frame(x = c(input$window[1], input$window[2])), aes(x)) +
         stat_function(fun = function.to.plot()) +
         labs(x = "term [years]", y = "yield [bps]")
