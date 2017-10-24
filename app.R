@@ -6,7 +6,7 @@ library(ggplot2)
 load("yield_curve_2015-05-31.RData")
 
 yield.curve$fun <- approxfun(x = yield.curve$curve.data$term_Y,
-                             y = yield.curve$curve.data$yield_bsp,
+                             y = yield.curve$curve.data$yield_bps,
                              rule = 2)
 
 stress.fun <- list()
@@ -63,7 +63,7 @@ server <- function(input, output) {
       # draw the YC approximation function using ggplot
       ggplot(data.frame(x = c(input$window[1], input$window[2])), aes(x)) +
         stat_function(fun = function.to.plot()) +
-        labs(x = "term [years]", y = "yield [bsp]")
+        labs(x = "term [years]", y = "yield [bps]")
     })
 }
 
