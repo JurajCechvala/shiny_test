@@ -4,7 +4,7 @@ library(ggplot2)
 # DATA PREPARATION --------------------------------------------------------------------------------
 load("yield_curve_2015-05-31.RData")
 
-yield.curve$fun <- approxfun(x = yield.curve$curve.data$term_Y,
+yield.curve$fun <- approxfun(x = yield.curve$curve.data$tenor_Y,
                              y = yield.curve$curve.data$yield_bps,
                              rule = 2)
 
@@ -65,11 +65,11 @@ ui <-
   sidebarLayout(
     sidebarPanel(
       sliderInput("window",
-                  "Minimum and maximum term [years]",
+                  "Minimum and maximum tenor [years]",
                   min = 0,
-                  max = 2*max(yield.curve$curve.data$term_Y, na.rm = TRUE),
-                  value = c(min(yield.curve$curve.data$term_Y, na.rm = TRUE),
-                            max(yield.curve$curve.data$term_Y, na.rm = TRUE)),
+                  max = 2*max(yield.curve$curve.data$tenor_Y, na.rm = TRUE),
+                  value = c(min(yield.curve$curve.data$tenor_Y, na.rm = TRUE),
+                            max(yield.curve$curve.data$tenor_Y, na.rm = TRUE)),
                   step = 1),
       radioButtons("stress",
                    "Select stress scenario",
@@ -94,7 +94,7 @@ server <- function(input, output) {
       # draw the YC function using ggplot
       ggplot(data.frame(x = c(input$window[1], input$window[2])), aes(x)) +
         stat_function(fun = function.to.plot()) +
-        labs(x = "term [years]", y = "yield [bps]")
+        labs(x = "tenor [years]", y = "yield [bps]")
     })
 }
 
