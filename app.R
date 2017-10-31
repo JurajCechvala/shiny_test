@@ -8,19 +8,50 @@ yield.curve$fun <- approxfun(x = yield.curve$curve.data$term_Y,
                              y = yield.curve$curve.data$yield_bps,
                              rule = 2)
 
-# stress scenarios as a list of functions to be superimposed on real YC
+# Stress scenarios as a list of functions to be superimposed on real YC. The list is
+# composed of stress scenarios required by Basel guidelines.
+ir.constant <- c("parallel" = 200,
+                 "short"    = 250,
+                 "long"     = 100)
+
 stress.fun <- list()
-stress.fun$no.stress  <- function(x) {rep(   0, length(x))}
-stress.fun$p200bps    <- function(x) {rep( 200, length(x))}
-stress.fun$m200bps    <- function(x) {rep(-200, length(x))}
-stress.fun$asc200bps  <- approxfun(x = c(0.5, 50),
-                                   y = c(0, 200),
-                                   rule = 2)
-stress.fun$desc200bps <- approxfun(x = c(0.5, 50),
-                                   y = c(200, 0),
-                                   rule = 2)
-names(stress.fun) <- c("No stress", "+200 bps uniform shift", "-200 bps uniform shift",
-                       "linear increase to +200 bps", "linear decrease from +200 bps")
+stress.fun$no.stress <- function(x) {
+  rep(0, length(x))
+}
+stress.fun$parallel.up <- function(x) {
+  rep(ir.constant["parallel"], length(x))
+}
+stress.fun$parallel.down <- function(x) {
+  rep(-ir.constant["parallel"], length(x))
+}
+stress.fun$short.up <- function(x) {
+  ir.constant["short"]*exp(-x/4)
+}
+stress.fun$short.down <- function(x) {
+  -ir.constant["short"]*exp(-x/4)
+}
+stress.fun$long.up <- function(x) {
+  ir.constant["long"]*(1 - exp(-x/4))
+}
+stress.fun$long.down <- function(x) {
+  -ir.constant["long"]*(1 - exp(-x/4))
+}
+stress.fun$steepener <- function(x) {
+  -0.65*ir.constant["short"]*exp(-x/4) + 0.9*ir.constant["long"]*(1 - exp(-x/4))
+}
+stress.fun$flattener <- function(x) {
+  0.8*ir.constant["short"]*exp(-x/4) - 0.6*ir.constant["long"]*(1 - exp(-x/4))
+}
+
+names(stress.fun) <- c("no shift",
+                       "upward parallel shift",
+                       "downward parallel shift",
+                       "short end upward shift",
+                       "short end downward shift",
+                       "long end upward shift",
+                       "long end downward shift",
+                       "steepening shift",
+                       "flattening shift")
 
 # SHINY APP ---------------------------------------------------------------------------------------
 # Define UI
